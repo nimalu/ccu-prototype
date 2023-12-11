@@ -1,24 +1,25 @@
 <script setup lang="ts">
 const route = useRoute();
 const id = route.params.id;
+const { options, chat, sendMessage } = useChat();
 </script>
 
 <template>
     <div class="d-flex flex-column chat-container">
-        <div class="overflow-y-auto w-100">
+        <div class="overflow-y-auto w-100 flex-grow-1">
             <div class="w-chat">
-                <Message />
-                <Message />
-                <Message />
-                <Message />
+                <Message
+                    v-for="message in chat"
+                    :favored="false"
+                    :name="message.author.name"
+                    :message="message.message"
+                    :simple-message="message.simpleMessage"
+                    :avatar="message.author.avatar"
+                />
             </div>
         </div>
         <div class="w-chat">
-            <v-text-field placeholder="Message Ethan Reynolds">
-                <template v-slot:append>
-                    <v-btn icon="mdi-send" variant="text" />
-                </template>
-            </v-text-field>
+            <InputField :options="options" @send="sendMessage" />
         </div>
     </div>
 </template>
