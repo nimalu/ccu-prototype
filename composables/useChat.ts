@@ -10,6 +10,7 @@ export interface Message {
     message: string;
     simpleMessage?: string;
     nextMessages: string[];
+    loading?: boolean;
 }
 
 export const YOU: Person = {
@@ -73,17 +74,22 @@ export function getMessage(id: string) {
     return msg;
 }
 
-const chat = ref<Message[]>([]);
-const options = ref<Message[]>([]);
 export const useChat = (initialMessageId: string) => {
+    const chat = ref<Message[]>([]);
+    const options = ref<Message[]>([]);
     function sendMessage(message: Message) {
         chat.value.push(message);
         const expertMessageId = message.nextMessages[0];
         const expertMessage = getMessage(expertMessageId);
+        expertMessage.loading = true;
+        options.value = [];
         chat.value.push(expertMessage);
-        options.value = allMessages.filter((m) =>
-            expertMessage.nextMessages.includes(m.id)
-        );
+        setTimeout(() => {
+            expertMessage.loading = false;
+            options.value = allMessages.filter((m) =>
+                expertMessage.nextMessages.includes(m.id)
+            );
+        }, 1500);
     }
 
     sendMessage(getMessage(initialMessageId));

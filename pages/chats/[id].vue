@@ -15,6 +15,7 @@ const { options, chat, sendMessage } = useChat(id);
                     :message="message.message"
                     :simple-message="message.simpleMessage"
                     :avatar="message.author.avatar"
+                    :loading="message.loading"
                 />
             </div>
         </div>
