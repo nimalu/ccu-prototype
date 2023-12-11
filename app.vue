@@ -17,7 +17,7 @@ const drawer = ref(false);
             </v-navigation-drawer>
 
             <v-main>
-                <v-layout class="h-100 w-100">
+                <v-layout>
                     <NuxtPage />
                 </v-layout>
             </v-main>
