@@ -40,7 +40,7 @@ function send() {
             @click:control="selectionOpen = !selectionOpen"
         >
             <template v-slot:append>
-                <v-btn icon="mdi-send" variant="text" @click="send" />
+                <v-btn :disabled="message == undefined" icon="mdi-send" variant="text" @click="send" />
             </template>
         </v-text-field>
     </div>
