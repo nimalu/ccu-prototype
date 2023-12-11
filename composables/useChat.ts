@@ -66,6 +66,8 @@ const allMessages: Message[] = [
     },
 ];
 
+export const firstMessages: Message[] = [getMessage("1")];
+
 export function getMessage(id: string) {
     const msg = allMessages.find((m) => m.id == id);
     if (!msg) {
@@ -74,9 +76,9 @@ export function getMessage(id: string) {
     return msg;
 }
 
-export const useChat = (initialMessageId: string) => {
-    const chat = ref<Message[]>([]);
-    const options = ref<Message[]>([]);
+const chat = ref<Message[]>([]);
+const options = ref<Message[]>([]);
+export const useChat = () => {
     function sendMessage(message: Message) {
         chat.value.push(message);
         const expertMessageId = message.nextMessages[0];
@@ -92,6 +94,5 @@ export const useChat = (initialMessageId: string) => {
         }, 1500);
     }
 
-    sendMessage(getMessage(initialMessageId));
     return { chat, options, sendMessage };
 };

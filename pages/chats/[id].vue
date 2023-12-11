@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const route = useRoute();
 const id = route.params.id;
-const { options, chat, sendMessage } = useChat(id);
+const { options, chat, sendMessage } = useChat();
 </script>
 
 <template>
