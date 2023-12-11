@@ -8,7 +8,7 @@ const drawer = ref(false);
                 <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
                 <v-app-bar-title>Walletwise</v-app-bar-title>
                 <v-spacer />
-                <v-btn>Hello</v-btn>
+                <v-btn icon="mdi-account-circle" />
             </v-app-bar>
             <v-navigation-drawer v-model="drawer">
                 <v-list>
@@ -17,7 +17,9 @@ const drawer = ref(false);
             </v-navigation-drawer>
 
             <v-main>
-                <NuxtPage />
+                <v-layout>
+                    <NuxtPage />
+                </v-layout>
             </v-main>
         </v-app>
     </NuxtLayout>
