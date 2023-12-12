@@ -1,10 +1,10 @@
 <script setup lang="ts">
 defineProps<{
     name: string;
-    avatar: string;
+    avatar?: string;
     message: string;
     simpleMessage?: string;
-    favored: boolean;
+    favored?: boolean;
     loading?: boolean;
 }>();
 const emit = defineEmits(["update:favored"]);

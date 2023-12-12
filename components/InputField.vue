@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import type { Message } from "~/composables/useChat";
 defineProps<{
-    options: Message[];
+    options: string[];
 }>();
 const emit = defineEmits(["send"]);
 
 const selectionOpen = ref(false);
-const message = ref<Message>();
+const message = ref<string>();
 
-function select(option: Message) {
+function select(option: string) {
     selectionOpen.value = false;
     message.value = option;
 }
@@ -30,12 +29,12 @@ function send() {
                 @click="() => select(option)"
             >
                 <v-card-item>
-                    {{ option.message }}
+                    {{ option}}
                 </v-card-item>
             </v-card>
         </v-sheet>
         <v-text-field
-            :value="message?.message"
+            :value="message"
             placeholder="Message Ethan Reynolds"
             @click:control="selectionOpen = !selectionOpen"
         >

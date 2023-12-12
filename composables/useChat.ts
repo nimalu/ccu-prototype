@@ -1,97 +1,87 @@
-export interface Person {
-    name: string;
-    role: string;
-    avatar: string;
-}
+import {
+    type Chat,
+    ChatServiceMock,
+    type ChatEvent,
+    type UserMessage,
+    type ExpertMessage,
+} from "~/utils/chatService";
 
-export interface Message {
-    id: string;
-    author: Person;
-    message: string;
-    simpleMessage?: string;
-    nextMessages: string[];
-    loading?: boolean;
-}
+const chatService = new ChatServiceMock();
 
-export const YOU: Person = {
-    name: "You",
-    role: "",
-    avatar: "",
-};
+const chat = ref<Chat>();
 
-const Ethan: Person = {
-    name: "Ethan Reynold",
-    role: "Budgeting expert",
-    avatar: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.x8UNRkaTzCW19mHkKpD86QHaLH%26pid%3DApi&f=1&ipt=b62f236e8dccdaf5046073cf8765da1d041f5bfacb0ca3b8fd6fc2d78b1e680d&ipo=images",
-};
+export function useChat(id?: string) {
+    const possibleAnswers = computed(() => {
+        if (!chat.value) {
+            return [];
+        }
+        const events = chat.value.events;
+        if (events.length == 0) {
+            return ["How do I save money for my children?"];
+        }
+        const latestEvent = events[events.length - 1];
+        if (latestEvent.eventName != "expertMessage") {
+            return [];
+        }
+        return (latestEvent as ExpertMessage).possibleAnswers;
+    });
 
-export const EXPERTS: Person[] = [Ethan];
-
-const allMessages: Message[] = [
-    {
-        id: "1",
-        author: YOU,
-        message: "How do I save money for my children?",
-        nextMessages: ["2"],
-    },
-    {
-        id: "2",
-        author: Ethan,
-        message: "Well, don't ask me. ",
-        nextMessages: ["3", "4", "5"],
-    },
-    {
-        id: "3",
-        author: YOU,
-        message: "You suck!",
-        nextMessages: ["6"],
-    },
-    {
-        id: "4",
-        author: YOU,
-        message: "Fuck off!",
-        nextMessages: ["6"],
-    },
-    {
-        id: "5",
-        author: YOU,
-        message: "Well, well, well",
-        nextMessages: ["6"],
-    },
-    {
-        id: "6",
-        author: Ethan,
-        message: "Shut up",
-        nextMessages: [],
-    },
-];
-
-export function getMessage(id: string) {
-    const msg = allMessages.find((m) => m.id == id);
-    if (!msg) {
-        throw new Error(`Could not find message ${id}`);
+    async function createChat() {
+        const chatId = await chatService.createChat();
+        chat.value = {
+            id: chatId,
+            events: [],
+        };
+        chatService.registerChatListener(
+            chatId,
+            "expertMessage",
+            addEventToChat
+        );
+        return chatId;
     }
-    return msg;
-}
+    if (id) {
+        chatService.registerChatListener(id, "expertMessage", addEventToChat);
+    }
+    onUnmounted(() => {
+        console.log("unmounted");
+        if (!chat.value) {
+            return;
+        }
+        chatService.unregisterChatListener(
+            chat.value.id,
+            "expertMessage",
+            addEventToChat
+        );
+    });
 
-export const useChat = (initialMessageId: string) => {
-    const chat = ref<Message[]>([]);
-    const options = ref<Message[]>([]);
-    function sendMessage(message: Message) {
-        chat.value.push(message);
-        const expertMessageId = message.nextMessages[0];
-        const expertMessage = getMessage(expertMessageId);
-        expertMessage.loading = true;
-        options.value = [];
-        chat.value.push(expertMessage);
-        setTimeout(() => {
-            expertMessage.loading = false;
-            options.value = allMessages.filter((m) =>
-                expertMessage.nextMessages.includes(m.id)
-            );
-        }, 1500);
+    function addEventToChat(event: ChatEvent) {
+        if (!chat.value) {
+            throw new Error("Not connected with chat");
+        }
+        const events = chat.value.events;
+        if (events.length == 0) {
+            events.push(event);
+        }
+        const latestEvent = events[events.length - 1];
+        if (latestEvent.id == event.id) {
+            events[events.length - 1] = event;
+        } else {
+            chat.value.events.push(event);
+        }
     }
 
-    sendMessage(getMessage(initialMessageId));
-    return { chat, options, sendMessage };
-};
+    function sendMessage(message: string) {
+        if (!chat.value) {
+            throw new Error("Not connected with chat");
+        }
+        const event: UserMessage = {
+            eventName: "userMessage",
+            id: `c-${chat.value.id}-m-${chat.value.events.length}`,
+            message,
+        };
+        addEventToChat(event);
+        chatService.sendChatEvent(chat.value.id, "userMessage", event);
+    }
+
+    return { createChat, sendMessage, possibleAnswers, chat };
+}
