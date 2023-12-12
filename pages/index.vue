@@ -12,7 +12,7 @@ async function onSend(msg: string) {
 
 <template>
     <div class="d-flex align-center justify-center w-100 h-100">
-        <v-card class="w-50 h-50">
+        <v-card class="w-50 h-50" :style="{ overflow: 'visible' }">
             <v-card-text class="w-100">
                 <InputField
                     class="w-100"
