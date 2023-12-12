@@ -8,8 +8,9 @@ import {
 
 const chatService = new ChatServiceMock();
 
-export function useChat() {
-    const chat = ref<Chat>();
+const chat = ref<Chat>();
+
+export function useChat(id?: string) {
     const possibleAnswers = computed(() => {
         if (!chat.value) {
             return [];
@@ -36,7 +37,21 @@ export function useChat() {
             "expertMessage",
             addEventToChat
         );
+        return chatId;
     }
+    if (id) {
+        chatService.registerChatListener(id, "expertMessage", addEventToChat);
+    }
+    onUnmounted(() => {
+        if (!chat.value) {
+            return;
+        }
+        chatService.unregisterChatListener(
+            chat.value.id,
+            "expertMessage",
+            addEventToChat
+        );
+    });
 
     function addEventToChat(event: ChatEvent) {
         if (!chat.value) {

@@ -37,3 +37,5 @@ export const allMessages: Message[] = [
     },
 ];
 
+export const firstMessages = ["1"].map(id => allMessages.find(m => m.id == id)!).map(m => m.value)
+

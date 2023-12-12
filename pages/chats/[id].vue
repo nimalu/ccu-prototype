@@ -1,6 +1,8 @@
 <script setup lang="ts">
-const { chat, createChat, sendMessage, possibleAnswers } = useChat();
-await createChat();
+const route = useRoute();
+const { chat, sendMessage, possibleAnswers } = useChat(
+    route.params.id as string
+);
 </script>
 
 <template>

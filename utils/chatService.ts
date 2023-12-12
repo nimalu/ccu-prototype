@@ -1,5 +1,25 @@
 import { allMessages } from "./messages";
 
+interface ChatService {
+    createChat(): Promise<string>;
+    getChat(id: string): Chat;
+    sendChatEvent<T extends keyof ChatEvents>(
+        chatId: string,
+        eventName: T,
+        event: ChatEvents[T]
+    ): void;
+    registerChatListener<T extends keyof ChatEvents>(
+        chatId: string,
+        eventName: T,
+        listener: ChatEventListener<T>
+    ): void;
+    unregisterChatListener<T extends keyof ChatEvents>(
+        chatId: string,
+        eventName: T,
+        listener: ChatEventListener<T>
+    ): void;
+}
+
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export interface Expert {
     name: string;
@@ -34,20 +54,6 @@ export type ChatEventListener<T extends keyof ChatEvents> = (
     event: ChatEvents[T]
 ) => void;
 
-interface ChatService {
-    createChat(): Promise<string>;
-    sendChatEvent<T extends keyof ChatEvents>(
-        chatId: string,
-        eventName: T,
-        event: ChatEvents[T]
-    ): void;
-    registerChatListener<T extends keyof ChatEvents>(
-        chatId: string,
-        eventName: T,
-        listener: ChatEventListener<T>
-    ): void;
-}
-
 export interface Chat {
     id: string;
     events: ChatEvent[];
@@ -61,9 +67,13 @@ export class ChatServiceMock implements ChatService {
     chats: Record<string, Chat> = {};
     listeners: Record<string, EventListeners> = {};
 
+    getChat(id: string): Chat {
+        return JSON.parse(JSON.stringify(this.chats[id]));
+    }
+
     async createChat() {
         await delay(100);
-        const chatId = `chat-${this.chats.length}`;
+        const chatId = `chat-${Object.keys(this.chats).length}`;
         this.chats[chatId] = {
             id: chatId,
             events: [],
@@ -83,6 +93,17 @@ export class ChatServiceMock implements ChatService {
             };
         }
         this.listeners[chatId][eventName].push(listener);
+    }
+
+    unregisterChatListener<T extends keyof ChatEvents>(
+        chatId: string,
+        eventName: T,
+        listener: ChatEventListener<T>
+    ): void {
+        const listeners = this.listeners[chatId][eventName];
+        this.listeners[chatId][eventName] = listeners.filter(
+            (l) => l != listener
+        ) as typeof listeners;
     }
 
     sendChatEvent<T extends keyof ChatEvents>(
@@ -139,7 +160,7 @@ export class ChatServiceMock implements ChatService {
                 );
                 charactersSent += 1;
             }
-            intervalId = setInterval(sendPart, 75);
+            intervalId = setInterval(sendPart, 25);
         }
     }
 }

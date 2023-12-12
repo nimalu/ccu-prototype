@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { firstMessages, type Message } from "~/composables/useChat";
-const { sendMessage } = useChat();
+import { firstMessages } from "~/utils/messages";
 
-function onSend(message: Message) {
-    sendMessage(message);
-    navigateTo(`/chats/${message.id}`);
+const { createChat, sendMessage } = useChat();
+
+async function onSend(msg: string) {
+    const chatId = await createChat();
+    sendMessage(msg);
+    navigateTo(`/chats/${chatId}`);
 }
 </script>
 
@@ -12,7 +14,11 @@ function onSend(message: Message) {
     <div class="d-flex align-center justify-center w-100 h-100">
         <v-card class="w-50 h-50">
             <v-card-text class="w-100">
-                <InputField class="w-100" :options="firstMessages" @send="onSend" />
+                <InputField
+                    class="w-100"
+                    :options="firstMessages"
+                    @send="onSend"
+                />
             </v-card-text>
         </v-card>
     </div>
