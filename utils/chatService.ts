@@ -147,7 +147,7 @@ export class ChatServiceMock implements ChatService {
                 if (expertMessage.message.length == charactersSent) {
                     clearInterval(intervalId);
                     listeners[chatId]["expertMessage"].forEach((l) =>
-                        l(expertMessage)
+                        l(JSON.parse(JSON.stringify(expertMessage)))
                     );
                     return;
                 }
@@ -158,11 +158,12 @@ export class ChatServiceMock implements ChatService {
                     loading: true,
                 };
                 listeners[chatId]["expertMessage"].forEach((l) =>
-                    l(loadingMessage)
+                    l(JSON.parse(JSON.stringify(loadingMessage)))
                 );
                 charactersSent += 1;
             }
-            intervalId = setInterval(sendPart, 25);
+            sendPart()
+            setTimeout(() => (intervalId = setInterval(sendPart, 25)), 1000);
         }
     }
 }

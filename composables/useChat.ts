@@ -43,6 +43,7 @@ export function useChat(id?: string) {
         chatService.registerChatListener(id, "expertMessage", addEventToChat);
     }
     onUnmounted(() => {
+        console.log("unmounted")
         if (!chat.value) {
             return;
         }
