@@ -9,8 +9,52 @@ import {
 const chatService = new ChatServiceMock();
 
 const chat = ref<Chat>();
+const chats = ref<Chat[]>([]);
 
-export function useChat(id?: string) {
+export function useChats() {
+    function fetchChats() {
+        chats.value = chatService.getAllChats();
+    }
+    return { chats, fetchChats };
+}
+
+export function useChat(id?: MaybeRef<string | undefined>) {
+    function registerHandlers(chatId: string) {
+        console.log("registering handlers for", chatId);
+        chatService.registerChatListener(
+            chatId,
+            "expertMessage",
+            addEventToChat
+        );
+    }
+    function unregisterHandlers(chatId: string) {
+        console.log("unregistering handlers for", chatId);
+        chatService.clearChatListeners(chatId, "expertMessage");
+    }
+    watch(
+        () => toValue(id),
+        (newId, oldId) => {
+            if (oldId == newId) {
+                return;
+            }
+            if (oldId) {
+                unregisterHandlers(oldId);
+            }
+            if (newId) {
+                registerHandlers(newId);
+                chat.value = chatService.getChat(newId);
+            }
+        }
+    );
+    if (chat.value) {
+        unregisterHandlers(chat.value.id);
+    }
+    const chatId = toValue(id);
+    if (chatId) {
+        registerHandlers(chatId);
+        chat.value = chatService.getChat(chatId);
+    }
+
     const possibleAnswers = computed(() => {
         if (!chat.value) {
             return [];
@@ -31,28 +75,11 @@ export function useChat(id?: string) {
         chat.value = {
             id: chatId,
             events: [],
+            title: "",
         };
-        chatService.registerChatListener(
-            chatId,
-            "expertMessage",
-            addEventToChat
-        );
+        registerHandlers(chatId);
         return chatId;
     }
-    if (id) {
-        chatService.registerChatListener(id, "expertMessage", addEventToChat);
-    }
-    onUnmounted(() => {
-        console.log("unmounted");
-        if (!chat.value) {
-            return;
-        }
-        chatService.unregisterChatListener(
-            chat.value.id,
-            "expertMessage",
-            addEventToChat
-        );
-    });
 
     function addEventToChat(event: ChatEvent) {
         if (!chat.value) {

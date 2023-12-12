@@ -1,8 +1,7 @@
 <script setup lang="ts">
 const route = useRoute();
-const { chat, sendMessage, possibleAnswers } = useChat(
-    route.params.id as string
-);
+const chatId = ref(route.params.id as string)
+const { chat, sendMessage, possibleAnswers } = useChat( chatId);
 </script>
 
 <template>

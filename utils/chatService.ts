@@ -3,6 +3,7 @@ import { allMessages } from "./messages";
 interface ChatService {
     createChat(): Promise<string>;
     getChat(id: string): Chat;
+    getAllChats(): Chat[];
     sendChatEvent<T extends keyof ChatEvents>(
         chatId: string,
         eventName: T,
@@ -13,10 +14,9 @@ interface ChatService {
         eventName: T,
         listener: ChatEventListener<T>
     ): void;
-    unregisterChatListener<T extends keyof ChatEvents>(
+    clearChatListeners<T extends keyof ChatEvents>(
         chatId: string,
         eventName: T,
-        listener: ChatEventListener<T>
     ): void;
 }
 
@@ -57,6 +57,7 @@ export type ChatEventListener<T extends keyof ChatEvents> = (
 
 export interface Chat {
     id: string;
+    title: string;
     events: ChatEvent[];
 }
 
@@ -72,12 +73,17 @@ export class ChatServiceMock implements ChatService {
         return JSON.parse(JSON.stringify(this.chats[id]));
     }
 
+    getAllChats(): Chat[] {
+        return Object.values(this.chats);
+    }
+
     async createChat() {
         await delay(100);
         const chatId = `chat-${Object.keys(this.chats).length}`;
         this.chats[chatId] = {
             id: chatId,
             events: [],
+            title: "",
         };
         return chatId;
     }
@@ -96,15 +102,8 @@ export class ChatServiceMock implements ChatService {
         this.listeners[chatId][eventName].push(listener);
     }
 
-    unregisterChatListener<T extends keyof ChatEvents>(
-        chatId: string,
-        eventName: T,
-        listener: ChatEventListener<T>
-    ): void {
-        const listeners = this.listeners[chatId][eventName];
-        this.listeners[chatId][eventName] = listeners.filter(
-            (l) => l != listener
-        ) as typeof listeners;
+    clearChatListeners<T extends keyof ChatEvents>(chatId: string, eventName: T): void {
+        this.listeners[chatId][eventName] = []
     }
 
     sendChatEvent<T extends keyof ChatEvents>(
@@ -120,6 +119,9 @@ export class ChatServiceMock implements ChatService {
                 throw new Error(
                     `Could not find message corresponding to ${event.message}`
                 );
+            }
+            if (message.chatTitle) {
+                this.chats[chatId].title = message.chatTitle;
             }
             if (message.next.length == 0) {
                 console.warn("No more messages");
@@ -139,16 +141,24 @@ export class ChatServiceMock implements ChatService {
                 message: expertAnswer.value,
                 simpleMessage: expertAnswer.simpleValue!,
             };
-            this.chats[chatId].events.push(expertMessage);
-            const listeners = this.listeners;
+            const getListeners = () => this.listeners
             let charactersSent = 0;
             let intervalId: NodeJS.Timeout;
+            const events = this.chats[chatId].events;
             function sendPart() {
                 if (expertMessage.message.length == charactersSent) {
                     clearInterval(intervalId);
-                    listeners[chatId]["expertMessage"].forEach((l) =>
+                    getListeners()[chatId]["expertMessage"].forEach((l) =>
                         l(JSON.parse(JSON.stringify(expertMessage)))
                     );
+                    if (
+                        events.length > 0 &&
+                        events[events.length - 1].id == expertMessage.id
+                    ) {
+                        events[events.length - 1] = expertMessage;
+                    } else {
+                        events.push(expertMessage);
+                    }
                     return;
                 }
                 const part = expertMessage.message.slice(0, charactersSent);
@@ -157,12 +167,20 @@ export class ChatServiceMock implements ChatService {
                     message: part,
                     loading: true,
                 };
-                listeners[chatId]["expertMessage"].forEach((l) =>
+                getListeners()[chatId]["expertMessage"].forEach((l) =>
                     l(JSON.parse(JSON.stringify(loadingMessage)))
                 );
+                if (
+                    events.length > 0 &&
+                    events[events.length - 1].id == loadingMessage.id
+                ) {
+                    events[events.length - 1] = loadingMessage;
+                } else {
+                    events.push(loadingMessage);
+                }
                 charactersSent += 1;
             }
-            sendPart()
+            sendPart();
             setTimeout(() => (intervalId = setInterval(sendPart, 25)), 1000);
         }
     }

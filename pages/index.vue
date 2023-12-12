@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { firstMessages } from "~/utils/messages";
 
-const { createChat, sendMessage } = useChat();
+const chatId = ref<string>()
+const { createChat, sendMessage } = useChat(chatId);
 
 async function onSend(msg: string) {
-    const chatId = await createChat();
+    chatId.value = await createChat();
     sendMessage(msg);
-    navigateTo(`/chats/${chatId}`);
+    navigateTo(`/chats/${chatId.value}`);
 }
 </script>
 

@@ -4,6 +4,7 @@ interface Message {
     simpleValue?: string;
     author?: Expert;
     next: string[];
+    chatTitle?: string;
 }
 
 const experts: Record<"ethan" | "olivia", Expert> = {
@@ -24,6 +25,7 @@ export const allMessages: Message[] = [
         id: "1",
         value: "I've been thinking about saving money for my inheritance, but I'm not really sure where to start with investing",
         next: ["2"],
+        chatTitle: "Saving money for inheritance",
     },
     {
         id: "2",
@@ -61,6 +63,7 @@ export const allMessages: Message[] = [
         id: "101",
         value: `I heard about a new investment fund from a friend, and I wanted to get some information about it. It’s called Awesome Fund. Do you have any information on it?`,
         next: ["102"],
+        chatTitle: "Investment fund",
     },
     {
         id: "102",
