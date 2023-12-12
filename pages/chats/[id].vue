@@ -20,6 +20,7 @@ const { chat, sendMessage, possibleAnswers } = useChat(
                         :name="(chatEvent as ExpertMessage).author.name"
                         :avatar="(chatEvent as ExpertMessage).author.avatar"
                         :message="(chatEvent as ExpertMessage).message"
+                        :simple-message="(chatEvent as ExpertMessage).simpleMessage"
                     />
                 </template>
             </div>

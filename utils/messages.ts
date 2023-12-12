@@ -1,6 +1,7 @@
 interface Message {
     id: string;
     value: string;
+    simpleValue?: string;
     author?: Expert;
     next: string[];
 }
@@ -22,6 +23,7 @@ export const allMessages: Message[] = [
     {
         id: "2",
         value: "Well, I only do music but let me thing.",
+        simpleValue: "This is simpler",
         next: ["3", "4"],
         author: experts.ethan
     },

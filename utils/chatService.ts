@@ -40,6 +40,7 @@ export interface UserMessage extends ChatEvent {
 export interface ExpertMessage extends ChatEvent {
     eventName: "expertMessage";
     message: string;
+    simpleMessage: string;
     author: Expert;
     possibleAnswers: string[];
     loading?: boolean;
@@ -136,6 +137,7 @@ export class ChatServiceMock implements ChatService {
                     .filter((m) => m != undefined)
                     .map((m) => m!.value),
                 message: expertAnswer.value,
+                simpleMessage: expertAnswer.simpleValue!,
             };
             this.chats[chatId].events.push(expertMessage);
             const listeners = this.listeners;
