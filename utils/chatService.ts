@@ -117,9 +117,29 @@ export class ChatServiceMock implements ChatService {
                 message: expertAnswer.value,
             };
             this.chats[chatId].events.push(expertMessage);
-            this.listeners[chatId]["expertMessage"].forEach((l) =>
-                l(expertMessage)
-            );
+            const listeners = this.listeners;
+            let charactersSent = 0;
+            let intervalId: NodeJS.Timeout;
+            function sendPart() {
+                if (expertMessage.message.length == charactersSent) {
+                    clearInterval(intervalId);
+                    listeners[chatId]["expertMessage"].forEach((l) =>
+                        l(expertMessage)
+                    );
+                    return;
+                }
+                const part = expertMessage.message.slice(0, charactersSent);
+                const loadingMessage = {
+                    ...expertMessage,
+                    message: part,
+                    loading: true,
+                };
+                listeners[chatId]["expertMessage"].forEach((l) =>
+                    l(loadingMessage)
+                );
+                charactersSent += 1;
+            }
+            intervalId = setInterval(sendPart, 75);
         }
     }
 }

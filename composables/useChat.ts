@@ -42,8 +42,16 @@ export function useChat() {
         if (!chat.value) {
             throw new Error("Not connected with chat");
         }
-        console.dir(event)
-        chat.value.events.push(event);
+        const events = chat.value.events;
+        if (events.length == 0) {
+            events.push(event);
+        }
+        const latestEvent = events[events.length - 1];
+        if (latestEvent.id == event.id) {
+            events[events.length - 1] = event;
+        } else {
+            chat.value.events.push(event);
+        }
     }
 
     function sendMessage(message: string) {
