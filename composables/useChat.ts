@@ -20,7 +20,6 @@ export function useChats() {
 
 export function useChat(id?: MaybeRef<string | undefined>) {
     function registerHandlers(chatId: string) {
-        console.log("registering handlers for", chatId);
         chatService.registerChatListener(
             chatId,
             "expertMessage",
@@ -28,7 +27,6 @@ export function useChat(id?: MaybeRef<string | undefined>) {
         );
     }
     function unregisterHandlers(chatId: string) {
-        console.log("unregistering handlers for", chatId);
         chatService.clearChatListeners(chatId, "expertMessage");
     }
     watch(
